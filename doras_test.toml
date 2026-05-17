@@ -1,0 +1,37 @@
+genome_size = 4_600_000 #ecoli
+experiment_name = "testdoras2" # TODO implement this field in my config
+# config.toml
+[bigsdb]
+base_api = "https://rest.pubmlst.org/"
+url = "https://rest.pubmlst.org/db/pubmlst_escherichia_seqdef/schemes/1/sequence"  # Replace with the actual URL or key
+scheme = "schemes/1"
+db_selected = "https://rest.pubmlst.org/db/pubmlst_escherichia_seqdef/" #e.g E.Coli db (url)
+
+
+[mlst_genes_path]
+value = "base_refs/ecoli_mlst_achtman.fasta"
+[paths]
+fastq_files_path = "./testdoras/"
+output_dir = "."
+
+[sample_names]
+list = ["barcode01",'barcode02',"barcode03","barcode04"]
+
+[run_params]
+quantile = 0.99
+min_quantile = 0.5
+min_map_quality = 10
+min_consensus_depth = 10
+ 
+
+[test_mode]
+value = true
+test_samples = [
+    "tests/sample01_exp24_ext_mappers.fastq.gz",
+    "tests/sample01_exp24_ext_mappers.fastq.gz",
+    "tests/sample01_exp24_ext_mappers_shuff1.fastq.gz",
+    "tests/sample01_exp24_ext_mappers_shuff1.fastq.gz"
+    ]
+    
+test_start_time = 0
+test_end_time = 7

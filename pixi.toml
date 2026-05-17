@@ -1,0 +1,105 @@
+[workspace]
+authors = ["Borcard Loïc Vivien <loic.borcard@unibe.ch>"]
+channels = ["conda-forge", "bioconda", "main", "r", "msys2","hcc"]
+name = "doras_dev"
+platforms = ["linux-64", "osx-arm64"]
+version = "0.5.0"
+
+preview = ["pixi-build"]
+### Specify the package properties ###
+[tool.marimo.runtime]
+pythonpath = ["src"]
+[package]
+name = "doras"
+version = "0.1.0"
+[package.build]
+#backend = { name = "pixi-build-python", version = "0.1.0dev20250107152721" }
+backend = { name = "pixi-build-python", version = "*" }
+channels = [
+  "https://prefix.dev/pixi-build-backends",
+  "https://prefix.dev/conda-forge",
+]
+
+
+[package.host-dependencies] 
+hatchling = "==1.26.3"
+
+[tasks]
+fmt = "ruff format --check ."
+lint = "ruff check ."
+test_long = { cmd = [
+    "main.py",
+    "--toml",
+    "doras_test.toml",
+    "--size","20000",
+],depends-on=["set","clean_up"]}
+test_ext = { cmd = [
+    "main.py",
+    "--toml",
+    "doras_test.toml",
+    "--size","3000",
+],depends-on=["set","clean_up"]}
+
+test_query = { cmd = [
+    "main.py",
+    "--toml",
+    "doras_test.toml",
+    "--phase","query"
+],depends-on=["test_ext"]}
+
+test_with_extension_compute = { cmd = [
+    "main.py",
+    "--toml",
+    "doras_test.toml",
+],depends-on =["set","clean_up"]}
+
+set = "export CUDA_VISIBLE_DEVICES=''"
+clean_up = "test -n \"$(ls -A testdoras* 2>/dev/null)\" && rm -rf testdoras* || true"
+
+[dependencies]
+bcftools = "*"
+bedtools = "*"
+blast = "*"
+csvtk = "*"
+minimap2 = ">=2.11"
+pip = "*"
+pyabpoa = "*"
+python = ">=3.12.3,<3.13"
+ruff = "*"
+samtools = "*"
+seqkit = "*"
+ca-certificates = "*"
+openssl = "*"
+altair = ">=5.5.0,<6"
+pytest-asyncio = ">=1.0.0,<2"
+black = ">=26.3.1,<27"
+pixi-pycharm = ">=0.0.11,<0.0.12"
+gxx = ">=15.1.0,<16"
+flask = ">=3.1.1,<4"
+polars = ">=1.32.3,<2"
+duckdb = ">=1.3.2,<2"
+sqlglot = ">=27.12.0,<28"
+openai = ">=1.107.0,<2"
+conda-build = ">=25.11.1,<26"
+
+[pypi-dependencies]
+medaka = ">=2.1.1, <3"
+pandas = ">=2.2.3, <3"
+biopython = ">=1.85, <2"
+stringzilla = ">=3.12.5, <4"
+watchdog = ">=6.0.0, <7"
+line-profiler = ">=4.2.0, <5"
+numba = ">=0.61.2, <0.62"
+pydantic = ">=2.11.5, <3"
+aiohttp = ">=3.11.18, <4"
+aiofiles = ">=24.1.0, <25"
+pymc = ">=5.22.0, <6"
+arviz = ">=0.21.0, <0.22"
+pytest = "*"
+pytest-asyncio = "*"
+iniconfig = "*"
+multiqc = ">=1.30, <2"
+marimo = ">=0.23.5, <0.24"
+pysam = ">=0.23.3, <0.24"
+aiogzip = ">=1.2.2, <2"
+pytz = "*"
