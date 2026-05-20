@@ -15,10 +15,6 @@ version = "0.1.0"
 [package.build]
 #backend = { name = "pixi-build-python", version = "0.1.0dev20250107152721" }
 backend = { name = "pixi-build-python", version = "*" }
-channels = [
-  "https://prefix.dev/pixi-build-backends",
-  "https://prefix.dev/conda-forge",
-]
 
 
 [package.host-dependencies] 
@@ -34,20 +30,20 @@ test_long = { cmd = [
     "--size","20000",
 ],depends-on=["set","clean_up"]}
 test_ext = { cmd = [
-    "main.py",
+    "python","main.py",
     "--toml",
     "doras_test.toml",
     "--size","3000",
 ],depends-on=["set","clean_up"]}
 
 test_query = { cmd = [
-    "main.py",
+    "python","main.py",
     "--toml",
     "doras_test.toml",
     "--phase","query"
 ],depends-on=["test_ext"]}
 
-test_with_extension_compute = { cmd = [
+test_with_extension_compute = { cmd = ["python",
     "main.py",
     "--toml",
     "doras_test.toml",
@@ -99,3 +95,4 @@ marimo = ">=0.23.5, <0.24"
 pysam = ">=0.23.3, <0.24"
 aiogzip = ">=1.2.2, <2"
 pytz = "*"
+scipy = ">=1.17.1, <2"
