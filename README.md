@@ -76,12 +76,15 @@ DORAS is configured via TOML files. You can generate or edit these manually or u
 
 #### `[bigsdb]` - PubMLST/BigsDB Integration
 - `base_api`: (URL) The base REST API endpoint for PubMLST (e.g., `https://rest.pubmlst.org`).
-- `url`: (URL) The specific sequence definition URL for the target scheme.
+- `url`: (URL) The specific sequence definition URL for the target scheme. this is the URL that you would use to access the scheme in the browser.
 - `scheme`: (String) The scheme path on PubMLST (e.g., `schemes/1/`).
 - `db_selected`: (String) The database name on PubMLST (e.g., `pubmlst_escherichia_seqdef`).
 
 #### `[mlst_genes_path]`
 - `value`: (Path) Path to the local FASTA file containing the initial MLST loci sequences used as seeds for extension.
+
+These loci are used to construct the initial reference and are not modified during extension. They should be created by the user based on the MLST scheme used in the experiment.
+see examples [here](https://github.com/RametteLab/DORAS/blob/main/base_refs) for more details.
 
 #### `[paths]`
 - `fastq_files_path`: (Path) Directory where the sequencer/basecaller deposits FastQ files (e.g., `path/to/fastq_pass`).
