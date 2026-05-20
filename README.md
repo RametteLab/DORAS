@@ -119,6 +119,17 @@ test_end_time_query = 1
 - `test_start_time` / `test_end_time`: (Integer) The start and end time (in hours) relative to the beginning of the "virtual" run for the **Extension Phase**.
 - `test_start_time_query` / `test_end_time_query`: (Integer) The start and end time (in hours) for the **Query Phase** simulation.
 
+#### Understanding Test Mode & Simulation
+Test mode allows you to simulate the dynamic behavior of DORAS using existing data. It is particularly useful for optimizing parameters or validating results without needing a live sequencing run.
+
+**How it works:**
+1. **Historical Data:** It takes existing FastQ files (defined in `test_samples`) that contain reads with ONT-standard timestamps in their headers.
+2. **Read Extraction by Time:** DORAS parses these timestamps to determine the relative start time of the experiment. It then extracts reads into "virtual" time windows (controlled by `test_interval`).
+3. **Simulation Phases:**
+   - **Extension Simulation:** Reads from `test_start_time` to `test_end_time` are progressively "released" into the `fastq_files_path`. This simulates the first few hours of a run where the reference is being extended.
+   - **Query Simulation:** Once the reference is ready (or if running in query phase), it simulates the typing process using reads from `test_start_time_query` to `test_end_time_query`.
+4. **Mock File Creation:** In the background, a `FastQTimeExtractor` creates mock FastQ files in the input directory at regular intervals, mimicking how MinKNOW/Guppy deposits files during a real run.
+
 ## Usage
 DORAS is designed to run alongside a live sequencing run with basecalling enabled.
 
