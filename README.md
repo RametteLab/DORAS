@@ -41,19 +41,13 @@ This tool circumvents the limitations of Multi-Locus Sequence Typing (MLST) enri
    ```
 2. Clone and install:
    ```bash
-   git clone <REPO_URL>
+   git clone git@github.com:RametteLab/DORAS.git
    cd doras
    pixi install
    ```
 
-### Conda 
-Alternatively, use the provided environment file:
-```bash
-git clone <REPO_URL>
-cd doras
-conda env create -f environment.yaml
-conda activate doras
-```
+### Conda (Coming soon)
+
 
 ## Project Structure
 ```text
