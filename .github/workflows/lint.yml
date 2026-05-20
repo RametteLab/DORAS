@@ -19,8 +19,6 @@ jobs:
         with:
           pixi-version: v0.68.1
           cache: true
-          auth-host: prefix.dev
-          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
       - name: Verify Formatting with Ruff
         run: pixi run ruff format --check .
 
