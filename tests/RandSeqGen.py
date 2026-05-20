@@ -6,6 +6,7 @@ Purpose: generate sequences
 """
 
 import argparse
+from random import choices
 
 
 # --------------------------------------------------
@@ -51,9 +52,6 @@ def get_args():
     )
 
     return parser.parse_args()
-
-
-from random import choices
 
 
 def RandSeq(size: int):

@@ -675,9 +675,7 @@ class ExtensionQuery:
 
             ## Exclude the targets (asmlst genes) that are already completed (fully extended)
             complete_headers = [
-                header
-                for header, value in self.complete_headers.items()
-                if value[0] == True
+                header for header, value in self.complete_headers.items() if value[0]
             ]
             paf = paf[~paf["target_name"].isin(complete_headers)]
             # Step 3: Process PAF and Compute Extensions

@@ -12,6 +12,8 @@ from Bio import SeqIO
 
 from .config import DorasParams
 
+logger = logging.getLogger(__name__)
+
 # Set up logging with debug mode included
 logger = logging.getLogger("QueryDB")
 logging.basicConfig(
@@ -97,31 +99,31 @@ def get_loci_status(params: DorasParams):
     return response_list
 
 
-def get_loci_status_single(params: DorasParams):
-    """
-    params are defined by the FetchConsensusDataParams Pydantic class which is defined by the toml file doras.toml
-    """
-    fa = SeqIO.parse(consensus, "fasta")
-    params = {"details": "true", "base64": "true"}
-    list_loci = []
-    list_isolates = []
-    for seq in fa:
-        list_isolates.append(sample_name)
-        _sequence_data = {"sequence": f"{seq.seq}"}
-        loci = seq.id.split("_")[0]
-        list_loci.append(loci)
-        _api_url = f"{params.selected_db}/loci/{loci}/sequence"
-
-        _response = requests.post(
-            _api_url,
-            data=json.dumps(_sequence_data),
-            params=params,  # Corrected to use params
-        )
-        _text = _response.json()
-        logger.debug(_text)  # Changed to debug
-        logger.info(f"Processed loci: {_loci}")
-
-    return list_loci, list_isolates
+# def get_loci_status_single(params: DorasParams):
+#     """
+#     params are defined by the FetchConsensusDataParams Pydantic class which is defined by the toml file doras.toml
+#     """
+#     fa = SeqIO.parse(consensus, "fasta")
+#     params = {"details": "true", "base64": "true"}
+#     list_loci = []
+#     list_isolates = []
+#     for seq in fa:
+#         list_isolates.append(sample_name)
+#         _sequence_data = {"sequence": f"{seq.seq}"}
+#         loci = seq.id.split("_")[0]
+#         list_loci.append(loci)
+#         _api_url = f"{params.selected_db}/loci/{loci}/sequence"
+#
+#         _response = requests.post(
+#             _api_url,
+#             data=json.dumps(_sequence_data),
+#             params=params,  # Corrected to use params
+#         )
+#         _text = _response.json()
+#         logger.debug(_text)  # Changed to debug
+#         logger.info(f"Processed loci: {_loci}")
+#
+#     return list_loci, list_isolates
 
 
 async def read_encode_fasta_file(fasta_path: Path):

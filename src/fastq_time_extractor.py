@@ -258,7 +258,7 @@ class FastQTimeExtractor:
                             header
                             and sequence
                             and plus_line == "+"
-                            and len(seq) == len(qual)
+                            and len(sequence) == len(quality_scores)
                         ):
                             raise ValueError("Unexpected FASTQ format")
 
@@ -521,7 +521,7 @@ class FastQTimeExtractor:
         if self.min_timestamp is None:
             self.get_run_info()
 
-        total_hours = (self.max_timestamp - self.min_timestamp).total_seconds() / 3600
+        (self.max_timestamp - self.min_timestamp).total_seconds() / 3600
         windows = []
 
         current_time = self.min_timestamp

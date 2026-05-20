@@ -17,8 +17,8 @@ jobs:
       - name: Set up Pixi Environment
         uses: prefix-dev/setup-pixi@v0.9.5
         with:
-          pixi-version: v0.68.1
           cache: true
+
       - name: Verify Formatting with Ruff
         run: pixi run ruff format --check .
 

@@ -210,9 +210,7 @@ def run_mapping_pipeline(fasta_path, fastq_path, from_sr=True):
             return None
 
         # Step 3: Run minimap2 and samtools view, sort, index
-        genes_bam_file_path = (
-            output_dir / f"{fastq_base_name}.mlst_genes_alone.sorted.bam"
-        )
+        (output_dir / f"{fastq_base_name}.mlst_genes_alone.sorted.bam")
     try:
         logging.debug(f"Running minimap2 on FASTQ extracted reads: {fastq_output_path}")
         result = subprocess.run(

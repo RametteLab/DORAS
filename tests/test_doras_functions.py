@@ -6,6 +6,17 @@ from typing import Any
 import pandas as pd
 import numpy as np
 import os
+from src.io import (
+    fasta_to_dict,
+)
+from stringzilla import Str
+from src.doras_extension import (
+    get_extensions_by_mapping,
+    trim_sequences,
+    compute_max_extensions,
+)
+from src.mapping import perform_alignment
+from src.utils import index_rev_reads, verify_depth
 
 # This is your function that processes a file
 # def process_file(filename):
@@ -88,18 +99,7 @@ def test_IndexRevReads(
 
 
 # test that getnext returns the proper format i.e an array containing the id (int ) of the reads
-import pytest
-import pandas as pd
-from src.io import (
-    fasta_to_dict,
-)
-from stringzilla import Str
-
 # Load the PAF file into a DataFrame
-
-
-from src.doras_extension import get_extensions_by_mapping
-from src.mapping import perform_alignment
 
 up_ext_102 = "GTCAACTTTCGCGTATTTGGTGTTACCCGCTTCAGCTTCTTTGGAGTAGTAGCCGATCAGCGGTGCAGTCATCTGATGGTATTCAACCAGACGTTTACGTAC"
 down_ext_137 = "ACGATCCGGACCGGTAGAGATGATATCGATCGGCACACCGGTCAGCTCTTCAATGCGCTTGATGTAGTTCAGTGCCGCCTGCGGCAGGCCGCTACGATCTTTCACGCCGAAGGTGGATTCAGACCAGCCCGGCATGG"
@@ -185,9 +185,6 @@ def fasta_dict_fix(fasta_Str_multiline: Any):
     return fasta_to_dict(fasta_Str_multiline)
 
 
-from src.doras_extension import trim_sequences
-
-
 @pytest.mark.parametrize(
     "dict_coord,target_size,barcode,expected_results",
     [
@@ -271,11 +268,6 @@ def test_perform_alignment(query, ref, expected_results: list[dict[str, Any]]):
     return results
 
 
-from src.doras_extension import compute_max_extensions
-from src.utils import index_rev_reads
-
-
-# TODO Implement a test for the max extensions function
 @pytest.mark.parametrize(
     "query, ref,up_trim,down_trim, expected_results",
     [
@@ -362,7 +354,6 @@ def test_fasta_to_dict():
 
 
 ### Testing the depth of each extension and the trimming of the sequence
-from src.utils import verify_depth
 
 ## Define the expected outputs for the depth, #TODO find a better solution
 depth2_137 = np.zeros(shape=2653)

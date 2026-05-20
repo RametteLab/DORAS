@@ -121,7 +121,7 @@ def size_dist_ratio_from_array(
     )  # ratio of reads containing the full ROI out of the reads falling into the optimal ref
     ratio_roiandoptimal_ref[raw_reads_len_alt_mask] = 0
 
-    non_roi_kmers = total_kmers - roi_kmers
+    total_kmers - roi_kmers
     ratio_opt_ref_kmers = roi_kmers / total_kmers  # optimal ref accepting ratio
 
     return (
