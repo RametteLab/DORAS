@@ -34,9 +34,6 @@ from src.utils import rev_com, clean_paf, index_rev_reads
 from src.simulation_model import find_optimal_quantile
 
 # Setup logging configuration
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 
 def compute_max_extensions(
@@ -439,6 +436,7 @@ class ExtensionQuery:
         mlst_ref_genes_path: Path,
         target_size: int,
         parent_logger: logging.Logger,
+        test_mode: bool = False,
         pause_event=asyncio.Event(),
         mapq=60,
         starting_phase=Phase.EXTENSION,
@@ -456,7 +454,7 @@ class ExtensionQuery:
         self.barcode = barcode
         self.phase = starting_phase
         self.completed = False  # The isolate ST is solved
-        self.logging = parent_logger.getChild(f"processor_{self.barcode}")
+        self.logging = parent_logger.getChild(self.barcode)
         self.fastqs_path = Path(raw_fastq_path) / barcode
         self.output_dir: Path = (
             folder_path / barcode
@@ -483,6 +481,7 @@ class ExtensionQuery:
         )
         self.last_medaka_polish_time = time.time()
         self.params = params
+        self.test_mode = test_mode
         # self.mapq = mapq/
         self.mapq_filter = mapq
         self.clean_up = clean_up
@@ -546,17 +545,11 @@ class ExtensionQuery:
             self.logging.error("No final ref available, cancelling run")
             raise asyncio.CancelledError()
 
-        if Path(self.concatenated_file).exists():
-            if self.clean_up:
-                self.logging.warning(
-                    f"Clean up is set to :{self.clean_up}, Erasing previous concatenated file : {self.concatenated_file}"
-                )
-                self.concatenated_file.unlink()
+        if self.concatenated_file.exists() and not self.test_mode:
+            self.logging.info(f"Erase previous concatenated file: {self.concatenated_file}")
+            self.concatenated_file.unlink()
 
         output_path = self.output_dir / f"{self.barcode}_extended_ref.fasta"
-        self.logging.info(
-            f"Initializing the extended reference, verifying if a previous sequence was started at {output_path} if overwrite is ({self.overwrite}) "
-        )
         if output_path.exists() and not self.overwrite:
             self.extended_ref = FastaHolder(str(output_path))
             self.logging.info(
@@ -580,6 +573,7 @@ class ExtensionQuery:
 
     async def concatenate_fastq_files_async(self):
         try:
+
             concatenated_file = (
                 self.output_dir / f"{self.barcode}_concatenated.fastq.gz"
             )
@@ -590,19 +584,29 @@ class ExtensionQuery:
                 for f in Path(self.fastqs_path).rglob("*.fastq.gz")
                 if f != concatenated_file
             ]
+            if not self.new_files_to_process():
+                self.logging.debug("NoNewFilesToProcess")
+
+
             if not fastq_files:
                 self.logging.critical(
                     f"No FASTQ files found in {self.output_dir}, .fastq.gz only will be detected"
                 )
-                return
 
             # Prevent to concatenate when files were already concatenated
             fastq_files_set = set(fastq_files)
             self.logging.debug(
                 f"current files {fastq_files_set} and processed files: {self.processed_files}"
             )
-            if fastq_files_set.issubset(self.processed_files):
-                self.logging.warning("All files are concatenated")
+
+            # Determine which files are new
+            new_fastq_files = [
+                f for f in fastq_files 
+                if str(f) not in self.processed_files
+            ]
+
+            if not new_fastq_files:
+                self.logging.debug("All FASTQ files are already concatenated. Skipping.")
                 return
 
             # Determine file mode: 'wb' to overwrite, 'ab' to append
@@ -612,25 +616,26 @@ class ExtensionQuery:
 
             if self.overwrite and concatenated_file.exists():
                 self.logging.info(f"Overwriting existing file: {concatenated_file}")
-            async with aiofiles.open(concatenated_file, file_mode) as outfile:
-                for fastq in fastq_files:
-                    if str(fastq) not in self.processed_files:
-                        async with aiofiles.open(fastq, "rb") as infile:
-                            content = await infile.read()
-                            await outfile.write(content)
-                        self.processed_files.add(str(fastq))
 
-                self.logging.info(
-                    f"Concatenated {len(fastq_files)} FASTQ files into {concatenated_file}"
+            async with aiofiles.open(concatenated_file, file_mode) as outfile:
+                for fastq in new_fastq_files:
+                    self.logging.debug(f"Concatenating {fastq.name} into {concatenated_file.name}")
+                    async with aiofiles.open(fastq, "rb") as infile:
+                        content = await infile.read()
+                        await outfile.write(content)
+                    self.processed_files.add(str(fastq))
+
+                self.logging.debug(
+                    f"Concatenated {len(new_fastq_files)} new FASTQ files into {concatenated_file}"
                 )
         except asyncio.CancelledError:
             self.logging.warning("Concatenation cancelled.")
-            raise
         except FileNotFoundError:
             self.logging.warning("No FASTQ files found for {self.barcode}")
+
         except Exception as e:
             self.logging.error(f"Error concatenating FASTQ files: {e}")
-            raise
+
 
     async def extension_process(self, file_path: str):
         """
@@ -770,7 +775,7 @@ class ExtensionQuery:
                     all_done = False
 
                     if self.params.force_finalize:
-                        self.logging
+                        self.logging.info(f"Forcing the finalization of {self.barcode} ")
                         all_done = True
 
                 else:
@@ -964,7 +969,9 @@ class ExtensionQuery:
             while not self.completed:
                 if self.phase == Phase.EXTENSION and not self.extension_complete:
                     try:
+
                         await self.concatenate_fastq_files_async()
+                        await asyncio.sleep(60)
 
                     except asyncio.CancelledError:
                         self.logging.error(
@@ -1025,12 +1032,12 @@ class ExtensionQuery:
                     break
 
         except asyncio.CancelledError as r:
-            logging.info(
+            self.logging.info(
                 msg=f"Processing for barcode {self.barcode} has been canceled \n Due to {r}."
             )
 
         except Exception as r:
-            logging.error(msg=f"Error processing files: {r}")
+            self.logging.error(msg=f"Error processing files: {r}")
 
     def prepare_for_query_phase(self):
         """
@@ -1050,6 +1057,17 @@ class ExtensionQuery:
         self.logging.info(
             f"Finalizing process, trimming the extended reference of {self.barcode} and saving it to {str(self.query_ref)}"
         )
+    def new_files_to_process(self):
+
+        # previously_processed_files = len(self.processed_files)
+        # Get current processed files count
+        current_processed_files = len(self.processed_files)
+
+        # Check if new files have been processed since last polish
+        new_files_processed = current_processed_files > self.previously_processed_files
+        if new_files_processed:
+            self.previously_processed_files = current_processed_files
+        return new_files_processed
 
     def get_ext_and_trim_ref(self, trim_length: int):
         """
@@ -1084,7 +1102,12 @@ class ExtensionQuery:
         )
 
     async def schedule_polishing(self):
+        """
+        Schedule the polishing of the final reference to the database
+        when a new file is generated
 
+        :return:
+        """
         # previously_processed_files = len(self.processed_files)
         # Get current processed files count
         current_processed_files = len(self.processed_files)
@@ -1143,15 +1166,18 @@ class ExtensionQuery:
                 self.logging.error(f"Error during medaka polishing: {e}")
                 # Wait before retrying
                 await asyncio.sleep(60)
-
+        self.logging.info("No new files to process, waiting for next iteration")
         # Sleep until next check or next polishing time, whichever comes first
         # sleep_duration = (
         #     min(60, time_until_next_polish) if time_until_next_polish > 0 else 1
         # )
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
 
     async def run_polish_with_medaka(self):
-
+        """
+        Wrapper method to run the polishing process with Medaka without scheduling it
+        :return:
+        """
         sequence_to_query = self.postprocessing_dir / "consensus.fasta"
         if not sequence_to_query.exists():
             sequence_to_query = self.query_ref
@@ -1169,10 +1195,10 @@ class ExtensionQuery:
         except RuntimeError as e:
             # This handles other medaka-related errors (executable not found, etc.)
             print(f"Runtime error in Medaka: {e}")
-            logging.error(f"Medaka runtime error: {e}")
+            self.logging.error(f"Medaka runtime error: {e}")
             return False
         except Exception as e:
-            logging.error(f"Error during medaka polishing: {e}")
+            self.logging.error(f"Error during medaka polishing: {e}")
 
     async def polish_query_ref(self):
         """

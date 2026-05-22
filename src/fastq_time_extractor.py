@@ -5,9 +5,6 @@ import logging
 import asyncio
 from pathlib import Path
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 
 class FastQTimeExtractor:

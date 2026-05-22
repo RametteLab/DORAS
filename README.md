@@ -46,8 +46,26 @@ This tool circumvents the limitations of Multi-Locus Sequence Typing (MLST) enri
    pixi install
    ```
 
+
+### Verification that installation was successful
+To verify that the installation was successful, you can run a test that will simulate a full run by extracting reads from a test directory and running the extension phase on them.
+This will simulate the typical behavior of a real sequencing run.
+The config of the run can be changed by modifying the `doras_test.toml` file. The reads used for the test can be found in the `test_data` directory. This can be modified but they must contain the timestamps of Nanopore in the headers.
+The details of how to set up such tests can be found in the [Testing & Development](#testing--development) section.
+
+```bash
+pixi run test_query
+```
+The test will take a few minutes to complete since it's only building a small extension (default is 3000 bp).
+If everything is working correctly, you should see this line at the end of script in the terminal:
+
+```
+2026-05-22 10:41:07,639 - INFO - Final ST status: {'Isolate': ['barcode01', 'barcode02', 'barcode03', 'barcode04'], 'ST': ['1115', '1115', '1115', '1115'], 'final_timepoint': [datetime.datetime(2026, 5, 22, 10, 40, 48, 658452), datetime.datetime(2026, 5, 22, 10, 40, 50, 509838), datetime.datetime(2026, 5, 22, 10, 40, 51, 352132), datetime.datetime(2026, 5, 22, 10, 40, 58, 245245)]}
+```
+
 ### Conda (Coming soon)
 
+TODO: Add conda installation instructions.
 
 ## Project Structure
 ```text
@@ -88,23 +106,23 @@ see examples [here](https://github.com/RametteLab/DORAS/blob/main/base_refs) for
 
 #### `[paths]`
 - `fastq_files_path`: (Path) Directory where the sequencer/basecaller deposits FastQ files (e.g., `path/to/fastq_pass`).
-- `output_dir`: (Path) Directory where results, temporary files, and logs will be stored.
+- `output_dir`: (Path) Directory where results named by the experiment name, temporary files, and logs will be stored.
 
 #### `[sample_names]`
-- `list`: (Array of Strings) List of barcode or sample names to process (e.g., `["barcode01", "barcode02"]`).
+- `list`: (Array of Strings) List of barcode or sample names to process (e.g., `["barcode01", "barcode02"]`). This should match the folder names in the `fastq_files_path`. In most cases, the file /path/to/fastq_pass/barcode01/ will contain the reads for sample barcode01.
 
 #### `[run_params]` - Core Algorithm Settings
 - `quantile`: (Float, 0.0-1.0) The target read length quantile to use for reference extension. A higher value (e.g., `0.95`) means longer extensions based on the longer reads in the distribution.
 - `min_quantile`: (Float, 0.0-1.0) The minimum quantile allowed during dynamic adjustment.
-- `min_map_quality`: (Integer) Minimum mapping quality (MAPQ) score for a read to be considered for extension or typing.
-- `min_consensus_depth`: (Integer) Minimum read depth required at a position to confidently call a consensus base during extension.
+- `min_map_quality`: (Integer) Minimum mapping quality (MAPQ) score for a read to be considered for extension or typing (default: 10).
+- `min_consensus_depth`: (Integer) Minimum read depth required at a position to confidently call a consensus base during extension (default: 20).
 
 ### Test Mode
 Enable `test_mode` in the TOML to use local FastQ files instead of monitoring a directory for live sequencing. This is useful for simulating runs or re-running analysis on existing data.
 
 ```toml
 [test_mode]
-value = true
+value = false #default is false
 test_samples = ["path/to/test.fastq.gz"]
 test_start_time = 0
 test_end_time = 1
@@ -112,7 +130,7 @@ test_start_time_query = 0
 test_end_time_query = 1
 ```
 - `value`: (Boolean) Set to `true` to enable test mode.
-- `test_samples`: (Array of Paths) List of paths to FastQ files to use for simulation.
+- `test_samples`: (Array of Paths) List of paths to FastQ files to use for simulation. Each index of the list corresponds to a sample, if you have only 1 fastq you can copy the same path as done in the example in doras_test.toml.
 - `test_start_time` / `test_end_time`: (Integer) The start and end time (in hours) relative to the beginning of the "virtual" run for the **Extension Phase**.
 - `test_start_time_query` / `test_end_time_query`: (Integer) The start and end time (in hours) for the **Query Phase** simulation.
 

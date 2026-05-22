@@ -24,6 +24,7 @@ class DorasManager:
         test_mode: bool,
         overwrite: bool,
         clean_up: bool,
+        logger: logging.Logger,
         target_extension_size: int,
         params: DorasParams,  # TODO add params from toml for the query
         phase=Phase.EXTENSION,
@@ -46,7 +47,8 @@ class DorasManager:
         self.clean_up = clean_up
         self.phase_switching_event = asyncio.Event()
         self.done_event = asyncio.Event()
-        self.logging = logging.getLogger("Manager")
+        self.logging = logger
+        self.logging.info(f"Starting DORAS with parameters: {self.params.model_dump_json(indent=4)}")
         self.mock_files_creators = []
         self.test_mode = test_mode
         self._setup_processors()
@@ -65,6 +67,7 @@ class DorasManager:
                 overwrite=self.overwrite,
                 pause_event=self.phase_switching_event,
                 parent_logger=self.logging,
+                test_mode=self.test_mode,
                 starting_phase=self.phase,
                 params=self.params,
             )

@@ -33,7 +33,7 @@ parser.add_argument(
 parser.add_argument(
     "--overwrite_previous_ref",
     action="store_true",
-    help="Whether to overwrite the previous reference when restarting the script after a crash",
+    help="Whether to overwrite the previous reference when restarting the script",
 )
 parser.add_argument(
     "--force_finalize",
@@ -41,33 +41,31 @@ parser.add_argument(
     help="Finish the trimming process without completing the extension",
 )
 parser.add_argument(
-    "--clean", action="store_true", help="Remove the concatenanted fastq file"
+    "--no_clean_up", action="store_true", help="Do not remove the concatenanted fastq file"
 )
 parser.add_argument("--debug", action="store_true", help="Enable debug logging")
 
 args = parser.parse_args()
 
 params = load_params_from_toml(args.toml)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-
-log_file = f"{params.experiment_name}.log"
-# handler = TimedRotatingFileHandler(
-#     filename=os.path.join(log_dir, f".doras.log"),
-#     when="midnight",  # Rotate at midnight
-#     interval=1,        # Every 1 day
-#     backupCount=60,    # Keep 30 days of logs
-#     encoding="utf-8"
-# )
-handler = logging.FileHandler(log_file)
-
-handler.setLevel(logging.INFO)
+logger = logging.getLogger("DORAS")
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+# Log to file
+log_file = f'{params.experiment_name}.log'
+file_handler = logging.FileHandler(log_file)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
+## Stream printed to console
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+stream_handler.setFormatter(formatter)
 if args.debug:
-    handler.setLevel(logging.DEBUG)
-logger = logging.getLogger().addHandler(handler)
+    stream_handler.setLevel(logging.DEBUG)
 
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+logger.propagate = False
 
 async def main():
     mlst_genes_path = params.mlst_genes_path
@@ -86,9 +84,10 @@ async def main():
         overwrite=args.overwrite_previous_ref,
         target_extension_size=args.size,
         params=params,
-        clean_up=args.clean,
+        clean_up=args.no_clean_up,
         test_mode=params.test_mode,  # TODO add params for TEST_MODE
         phase=args.phase,
+        logger=logger,
     )
 
     processor_task = asyncio.create_task(manager.main())

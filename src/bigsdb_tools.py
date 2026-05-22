@@ -12,14 +12,9 @@ from Bio import SeqIO
 
 from .config import DorasParams
 
-logger = logging.getLogger(__name__)
 
 # Set up logging with debug mode included
 logger = logging.getLogger("QueryDB")
-logging.basicConfig(
-    level=logging.INFO,  # Changed to DEBUG for detailed logs
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 BASE_API = {
     "PubMLST": "https://rest.pubmlst.org",
