@@ -177,6 +177,3 @@ Use `pixi run` to execute predefined tasks:
 
 ## Citation
 TODO: Add citation information when available.
-
-## License
-TODO: Add license information (e.g., MIT, GPL).RAS
