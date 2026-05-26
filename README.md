@@ -1,5 +1,4 @@
-
-![DOI](https://zenodo.org/badge/961885058.svg)
+[![DOI](https://zenodo.org/badge/961885058.svg)](https://doi.org/10.5281/zenodo.20391868)
 
 # DORAS (Dynamically Optimized Reference for Adaptive Sampling)
 DORAS is a tool designed to optimize enrichment of adaptive sampling (e.g., Oxford Nanopore Technologies' ReadUntil) by dynamically optimizing the length of the reference based on the read length distribution. 
