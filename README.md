@@ -1,5 +1,5 @@
 # DORAS (Dynamically Optimized Reference for Adaptive Sampling)
-
+[![DOI](https://zenodo.org/badge/961885058.svg)](https://doi.org/10.5281/zenodo.20391868)
 DORAS is a tool designed to optimize enrichment of adaptive sampling (e.g., Oxford Nanopore Technologies' ReadUntil) by dynamically optimizing the length of the reference based on the read length distribution. 
 
 This tool circumvents the limitations of Multi-Locus Sequence Typing (MLST) enrichment where the genomic context of the *loci* is unknown for clinical isolates. It works in two main phases: extending base MLST loci to capture context and then using the extended references for high-accuracy sequence typing.
